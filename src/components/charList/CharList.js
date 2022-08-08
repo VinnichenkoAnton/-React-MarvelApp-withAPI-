@@ -1,4 +1,5 @@
-import { Component } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
@@ -7,6 +8,7 @@ import ErrorMessage from '../errorMessage/errorMessage';
 import './charList.scss';
 
 class CharList extends Component {
+    focusRef = React.createRef();
     state = {
         charList: [],
         loading: true,
@@ -63,6 +65,10 @@ class CharList extends Component {
         })
     }
 
+    onFocus = () => {
+        this.focusRef.current.className = 'zalupa';
+    }
+
     renderItems(arr) {
         const items = arr.map((item) => {
             let imgStyle = { 'objectFit': 'cover' };
@@ -72,7 +78,9 @@ class CharList extends Component {
 
             return (
                 <li key={item.id}
-                    onClick={() => this.props.onCharSelected(item.id)}
+                    ref = {this.focusRef}
+                    onClick={() => {this.props.onCharSelected(item.id);
+                                    this.onFocus()}}
                     className="char__item">
                     <img src={item.thumbnail} alt={item.name} style={imgStyle} />
                     <div className="char__name">{item.name}</div>
@@ -114,6 +122,10 @@ class CharList extends Component {
             </div>
         )
     }
+}
+
+CharList.propTypes = {
+    onCharSelected: PropTypes.func.isRequired
 }
 
 export default CharList;
