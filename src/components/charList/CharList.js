@@ -1,4 +1,4 @@
-import {Component} from 'react';
+import { Component } from 'react';
 
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
@@ -10,31 +10,48 @@ class CharList extends Component {
     state = {
         charList: [],
         loading: true,
-        error: false
+        error: false,
+        newItemLoading: false,
+        offset: 210,
+        charEnded: false
     }
 
     marvelService = new MarvelService();
 
     componentDidMount() {
-        this.allCharacters();
+        this.onRequest();
     }
 
-    allCharacters = () => {
-        this.marvelService
-            .getAllCharacters()
+    onRequest = (offset) => {
+        this.onCharListLoading();
+        this.marvelService.getAllCharacters(offset)
             .then(this.onAllCharsLoaded)
-            .catch(this.onError)  
+            .catch(this.onError)
     }
 
-    onAllCharsLoaded = (charList) => {
+    onCharListLoading = () => {
         this.setState({
-            charList: charList, 
-            loading: false
+            newItemLoading: true
         })
     }
 
+    onAllCharsLoaded = (newcharList) => {
+        let ended = false;
+        if(newcharList.length < 9) {
+            ended = true;
+        }
+
+        this.setState(({ offset, charList }) => ({
+            charList: [...charList, ...newcharList],
+            loading: false,
+            newItemLoading: false,
+            offset: offset + 9,
+            charEnded: ended
+        }))
+    }
+
     onCharLoading = () => {
-        this.setState ({
+        this.setState({
             loading: true
         })
     }
@@ -46,18 +63,18 @@ class CharList extends Component {
         })
     }
 
-    renderItems(arr){
+    renderItems(arr) {
         const items = arr.map((item) => {
-            let imgStyle = {'objectFit' : 'cover'};
+            let imgStyle = { 'objectFit': 'cover' };
             if (item.thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
-                imgStyle = {'objectFit' : 'unset'};
+                imgStyle = { 'objectFit': 'unset' };
             }
 
             return (
-                <li key ={item.id}
-                    onClick={()=>this.props.onCharSelected(item.id)}
+                <li key={item.id}
+                    onClick={() => this.props.onCharSelected(item.id)}
                     className="char__item">
-                    <img src={item.thumbnail} alt={item.name} style={imgStyle}/>
+                    <img src={item.thumbnail} alt={item.name} style={imgStyle} />
                     <div className="char__name">{item.name}</div>
                 </li>
             )
@@ -68,22 +85,26 @@ class CharList extends Component {
                 <ul className="char__grid">
                     {items}
                 </ul>
-                <button className="button button__main button__long">
-                <div className="inner">load more</div>
+                <button 
+                    className="button button__main button__long"
+                    disabled={this.state.newItemLoading}
+                    style = {{'display' : this.state.charEnded ? 'none' : 'block'}}
+                    onClick={()=>this.onRequest(this.state.offset)}>
+                    <div className="inner">load more</div>
                 </button>
             </>
-            
+
         )
     }
 
-    render () {
-        const {charList, loading, error} = this.state; 
-        const spinner = loading ? <Spinner/> : null;
-        const errorMessage = error ? <ErrorMessage/> : null;
+    render() {
+        const { charList, loading, error} = this.state;
+        const spinner = loading ? <Spinner /> : null;
+        const errorMessage = error ? <ErrorMessage /> : null;
         const items = this.renderItems(charList);
         const content = !(loading || error) ? items : null;
 
-        
+
 
         return (
             <div className="char__list">
