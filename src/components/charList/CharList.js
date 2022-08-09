@@ -66,7 +66,7 @@ class CharList extends Component {
     }
 
     onFocus = () => {
-        this.focusRef.current.className = 'zalupa';
+        this.focusRef.current.className = 'newClass';
     }
 
     renderItems(arr) {
